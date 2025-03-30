@@ -18,6 +18,7 @@ years = sorted(df["Year"].unique())
 selected_year = st.sidebar.selectbox("Select Year", options=["All"] + years)
 selected_genre = st.sidebar.multiselect("Select Genre", options=sorted(df["Genre"].unique()), default=df["Genre"].unique())
 selected_platform = st.sidebar.multiselect("Select Platform", options=sorted(df["Platform"].unique()), default=df["Platform"].unique())
+selected_region = st.sidebar.selectbox("Select Region", options=["Global", "NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales"])
 
 filtered_df = df[df["Genre"].isin(selected_genre) & df["Platform"].isin(selected_platform)]
 if selected_year != "All":
@@ -26,9 +27,9 @@ if selected_year != "All":
 st.title("🎮 Video Game Sales Dashboard")
 st.markdown("Explore global and regional sales of top video games by genre, platform, and time.")
 
-st.subheader("Top 10 Games by Global Sales")
-top10 = filtered_df.sort_values(by="Global_Sales", ascending=False).head(10)
-fig_top10 = px.bar(top10, x="Global_Sales", y="Name", orientation='h', title="Top 10 Games", labels={"Global_Sales": "Global Sales (Millions)", "Name": "Game"})
+st.subheader("Top 10 Games by Sales")
+top10 = filtered_df.sort_values(by=selected_region if selected_region != "Global" else "Global_Sales", ascending=False).head(10)
+fig_top10 = px.bar(top10, x=selected_region if selected_region != "Global" else "Global_Sales", y="Name", orientation='h', title="Top 10 Games", labels={selected_region if selected_region != "Global" else "Global_Sales": "Sales (Millions)", "Name": "Game"})
 st.plotly_chart(fig_top10, use_container_width=True)
 
 st.subheader("Regional Sales Breakdown")
@@ -78,7 +79,7 @@ st.plotly_chart(fig_market, use_container_width=True)
 
 st.subheader("Sales Bubble Chart")
 bubble = df.copy()
-bubble = bubble[bubble["Year"] >= 2000]  # keep recent data
+bubble = bubble[bubble["Year"] >= 2000]
 fig_bubble = px.scatter(bubble, x="Year", y="Global_Sales", size="NA_Sales", color="Platform", hover_name="Name", title="Sales vs Year vs Platform")
 st.plotly_chart(fig_bubble, use_container_width=True)
 
